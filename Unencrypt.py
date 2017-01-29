@@ -14,7 +14,7 @@
 #users must be run on two different terminals.
 
     #Python Unecrypt.py --s
-    #Python Unecrypt.py --c
+    #Python Unecrypt.py --c hostname
 #To exit program simply press #cntrl-C
 
 
@@ -32,7 +32,7 @@ if argsList[1] == '--s':
     #to allow for easy reuse of port number
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     #bind the server socket to any idenitfiable address, and respective port number
-    s.bind(('',9997))
+    s.bind(('',9999))
     #listen for up to 10 connections
     s.listen(10)
     #accept the connection
@@ -49,6 +49,7 @@ if argsList[1] == '--s':
                 #print message to the screen
                 print(str(message)),
                 #Attempting to send a message
+                sys.stdout.flush()
             elif item is sys.stdin:
                 #Read standard input and send via the connection
                 message = sys.stdin.readline()
@@ -59,22 +60,27 @@ if argsList[1] == '--s':
 elif argsList[1]== '--c':
     s = socket.socket()
     # connect
-    s.connect(('',9997))
-    while True:
-        read_list = [s] + [sys.stdin]
-        (input_list,_,_) = select.select(read_list,[],[])
-        for item in input_list:
-            #if first readable input is socket
-            if item is s:
-                #recieve message
-                message = s.recv(1024)
-                # print to standard output
-                print(str(message)),
-                #First readable input is of type standard inptu
-            elif item is sys.stdin:
-                #Read standard input
-                message = sys.stdin.readline()
-                #send message via the socket object
-                s.send(message)
-    #Terminate the connection
-    s.close()
+    #if argsList[2] == 'cjb291-alice':
+    if argsList[2] is not None:
+        s.connect((argsList[2],9999))
+        while True:
+            read_list = [s] + [sys.stdin]
+            (input_list,_,_) = select.select(read_list,[],[])
+            for item in input_list:
+                #if first readable input is socket
+                if item is s:
+                    #recieve message
+                    message = s.recv(1024)
+                    # print to standard output
+                    print(str(message)),
+                    #First readable input is of type standard inptu
+                    sys.stdout.flush()
+                elif item is sys.stdin:
+                    #Read standard input
+                    message = sys.stdin.readline()
+                    #send message via the socket object
+                    s.send(message)
+                    #Terminate the connection
+        s.close()
+    else:
+        print("please attempt to correctly connect to alice")
